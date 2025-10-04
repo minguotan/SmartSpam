@@ -8,7 +8,9 @@
  * @link http://www.yovisun.com
  *
  * 历史版本
- * 
+ * version 2.8.3 at 2025-10-05
+ * 邮箱过支持正则表达式，表达式首尾需要用//包裹，多个表达式请以换行分隔。by mgt
+ *
  * version 2.8.2 at 2024-09-19
  * 解决高版本php8.2报错strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated的问题。by 泽泽
  * 
@@ -100,7 +102,12 @@ class SmartSpam_Plugin implements Typecho_Plugin_Interface
 			_t('邮箱关键词'), _t('多个邮箱请用换行符隔开<br />可以是邮箱的全部，或者邮箱部分关键词'));
         $form->addInput($words_mail);        
         
-        
+        $opt_mail_regex = new Typecho_Widget_Helper_Form_Element_Radio('opt_mail_regex', array("none" => "无动作", "waiting" => "标记为待审核", "spam" => "标记为垃圾", "abandon" => "评论失败"), "abandon",
+			_t('屏蔽邮箱正则'), "如果评论发布者的邮箱与禁止的一致，将执行该操作");
+        $form->addInput($opt_mail_regex);
+        $words_mail_regex = new Typecho_Widget_Helper_Form_Element_Textarea('words_mail_regex', NULL, "",
+			_t('邮箱正则表达式'), _t('支持关键字和正则（首尾需要//包裹），多个表达式请用换行符隔开<br />'));
+        $form->addInput($words_mail_regex); 
         
         $opt_url = new Typecho_Widget_Helper_Form_Element_Radio('opt_url', array("none" => "无动作", "waiting" => "标记为待审核", "spam" => "标记为垃圾", "abandon" => "评论失败"), "abandon",
 			_t('屏蔽网址操作'), "如果评论发布者的网址与禁止的一致，将执行该操作。如果网址为空，该项不会起作用。");
@@ -391,7 +398,79 @@ class SmartSpam_Plugin implements Typecho_Plugin_Interface
 		}
 		return false;
 	}
+	    /**
+     * 邮箱正则过滤函数
+     * @param string $rules_str 过滤规则字符串
+     * @param string $email 要检测的邮箱地址
+     * @return bool 如果命中规则返回true，否则返回false
+     */
+    private static function check_email_filter($rules_str, $email)
+    {
+        // 如果未设置过滤规则，直接通过
+        $rules_str = trim($rules_str);
+        if ($rules_str == NULL || $rules_str == "") {
+            return false;
+        }
 
+        // 邮箱为空不检测
+        if (empty($email)) {
+            return false;
+        }
+
+        $rules = explode("\n", $rules_str);
+        if (empty($rules)) {
+            return false;
+        }
+
+        foreach ($rules as $rule) {
+            $rule = trim($rule);
+            if (empty($rule)) {
+                continue; // 跳过空行
+            }
+
+            // 检查是否是正则表达式（以/开头和结尾）
+            if (self::is_regex_pattern($rule)) {
+                // 正则表达式匹配
+                if (preg_match($rule, $email)) {
+                    return true;
+                }
+            } else {
+                // 普通关键字匹配
+                if (self::match_email_rule($rule, $email)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * 判断是否为正则表达式
+     */
+    private static function is_regex_pattern($pattern)
+    {
+        return strlen($pattern) >= 2 && $pattern[0] === '/' && $pattern[strlen($pattern) - 1] === '/';
+    }
+
+    /**
+     * 邮箱规则匹配
+     */
+    private static function match_email_rule($rule, $email)
+    {
+        // 转换为小写进行不区分大小写匹配
+        $email_lower = strtolower($email);
+        $rule_lower = strtolower($rule);
+
+        // 处理通配符规则
+        if (strpos($rule_lower, '*') !== false) {
+            $regex_pattern = '/^' . str_replace('\*', '.*', preg_quote($rule_lower, '/')) . '$/i';
+            return preg_match($regex_pattern, $email_lower);
+        }
+
+        // 精确匹配
+        return $email_lower === $rule_lower;
+    }
     /**
      * 检查$ip中是否在$words_ip的IP段中
      * 
