@@ -4,7 +4,7 @@
 原发布地址：https://www.yovisun.com/archive/typecho-plugin-smartspam.html
 
 ## 历史版本
- * * version 2.8.3 at 2025-10-05
+ * version 2.8.3 at 2025-10-05
  * 邮箱过支持正则表达式，表达式首尾需要用//包裹，多个表达式请以换行分隔。by mgt
  * 
  * version 2.8.2 at 2024-09-19
