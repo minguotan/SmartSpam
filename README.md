@@ -4,7 +4,15 @@
 原发布地址：https://www.yovisun.com/archive/typecho-plugin-smartspam.html
 
 ## 历史版本
-
+ * * version 2.8.3 at 2025-10-05
+ * 邮箱过支持正则表达式，表达式首尾需要用//包裹，多个表达式请以换行分隔。by mgt
+ * 
+ * version 2.8.2 at 2024-09-19
+ * 解决高版本php8.2报错strpos(): Passing null to parameter #1 ($haystack) of type string is deprecated的问题。by 泽泽
+ * 
+ * version 2.8.1 at 2023-12-16
+ * 修复当禁止IP列表里出现空行，会导致所有IP都被报告为禁止IP；修复当禁止词汇列表里出现空行，会导致所有内容都被报告为禁止词汇
+ * 
  * version 2.8.0 at 2023-12-16
  * 修复“不设置某项拦截项，而导致该项审核无法通过”的问题。by 尚寂新
  * 
