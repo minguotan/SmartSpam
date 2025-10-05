@@ -253,7 +253,13 @@ class SmartSpam_Plugin implements Typecho_Plugin_Interface
 				$opt = $filter_set->opt_mail;
 			}			
 		}  
-        
+        //屏蔽邮箱正则处理
+		if ($opt == "none" && $filter_set->opt_mail_regex != "none") {
+			if (SmartSpam_Plugin::check_email_filter($filter_set->words_mail_regex, $comment['mail'])) {
+				$error = "评论异常，请稍后重试，或者直接联系博主处理";
+				$opt = $filter_set->opt_mail_regex;
+			}			
+		}  
         //屏蔽网址处理
         if(!empty($filter_set->words_url)){
             if ($opt == "none" && $filter_set->opt_url != "none") {
