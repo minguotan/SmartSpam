@@ -4,7 +4,7 @@
  * 
  * @package SmartSpam
  * @author YoviSun
- * @version 2.8.2
+ * @version 2.8.3
  * @link http://www.yovisun.com
  *
  * 历史版本
